@@ -40,6 +40,9 @@ public class UserAddressJpaEntity {
     @Column
     private String complement;
 
+    @Column(nullable = false)
+    private String country;
+
     @Column(nullable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
     private LocalDateTime createdAt;
 

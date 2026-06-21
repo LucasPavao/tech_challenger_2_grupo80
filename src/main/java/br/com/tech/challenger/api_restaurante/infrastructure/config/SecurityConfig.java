@@ -2,6 +2,7 @@ package br.com.tech.challenger.api_restaurante.infrastructure.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -29,6 +30,16 @@ public class SecurityConfig {
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(SWAGGER_WHITELIST).permitAll()
+                        // Allow public endpoints for users
+                        .requestMatchers(HttpMethod.GET, "/v1/users/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/v1/users").permitAll()
+                        .requestMatchers(HttpMethod.PUT, "/v1/users/**").permitAll()
+                        .requestMatchers(HttpMethod.DELETE, "/v1/users/**").permitAll()
+                        // Allow public endpoints for user types (controllers under /v1/user-types)
+                        .requestMatchers(HttpMethod.GET, "/v1/user-types/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/v1/user-types").permitAll()
+                        .requestMatchers(HttpMethod.PUT, "/v1/user-types/**").permitAll()
+                        .requestMatchers(HttpMethod.DELETE, "/v1/user-types/**").permitAll()
                         // TODO: adicionar endpoint de autenticação (ex: POST /auth/login)
                         // .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
                         .anyRequest().authenticated()

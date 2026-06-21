@@ -20,6 +20,7 @@ public class UserAddressMapper {
                 .state(entity.getState())
                 .zipCode(entity.getZipCode())
                 .complement(entity.getComplement())
+                .country(entity.getCountry())
                 .createdAt(entity.getCreatedAt())
                 .updatedAt(entity.getUpdatedAt())
                 .build();
@@ -38,6 +39,7 @@ public class UserAddressMapper {
                 .state(domain.getState())
                 .zipCode(domain.getZipCode())
                 .complement(domain.getComplement())
+                .country(domain.getCountry())
                 .createdAt(domain.getCreatedAt())
                 .updatedAt(domain.getUpdatedAt())
                 .build();

@@ -38,7 +38,7 @@ public class UserJpaEntity {
     @JoinColumn(name = "user_type_id", nullable = false)
     private UserTypeJpaEntity userType;
 
-    @OneToOne(fetch = FetchType.EAGER)
+    @OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.PERSIST)
     @JoinColumn(name = "user_address_id", nullable = false, unique = true)
     private UserAddressJpaEntity userAddress;
 
