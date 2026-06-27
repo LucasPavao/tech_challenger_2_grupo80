@@ -23,7 +23,7 @@ public class SecurityConfig {
     };
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) {
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(session ->
@@ -33,13 +33,21 @@ public class SecurityConfig {
                         // Allow public endpoints for users
                         .requestMatchers(HttpMethod.GET, "/v1/users/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/v1/users").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/v1/users").permitAll()
                         .requestMatchers(HttpMethod.PUT, "/v1/users/**").permitAll()
                         .requestMatchers(HttpMethod.DELETE, "/v1/users/**").permitAll()
                         // Allow public endpoints for user types (controllers under /v1/user-types)
                         .requestMatchers(HttpMethod.GET, "/v1/user-types/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/v1/user-types").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/v1/user-types").permitAll()
                         .requestMatchers(HttpMethod.PUT, "/v1/user-types/**").permitAll()
                         .requestMatchers(HttpMethod.DELETE, "/v1/user-types/**").permitAll()
+                        // Allow public endpoints for user types (controllers under /v1/restaurant)
+                        .requestMatchers(HttpMethod.GET, "/v1/restaurants/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/v1/restaurants").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/v1/restaurants").permitAll()
+                        .requestMatchers(HttpMethod.PUT, "/v1/restaurants/**").permitAll()
+                        .requestMatchers(HttpMethod.DELETE, "/v1/restaurants/**").permitAll()
                         // TODO: adicionar endpoint de autenticação (ex: POST /auth/login)
                         // .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
                         .anyRequest().authenticated()
