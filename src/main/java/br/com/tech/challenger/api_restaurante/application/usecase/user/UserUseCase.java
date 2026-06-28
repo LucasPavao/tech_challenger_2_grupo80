@@ -4,6 +4,7 @@ import br.com.tech.challenger.api_restaurante.application.dto.UserDTO;
 import br.com.tech.challenger.api_restaurante.application.exception.EmailAlreadyExistsException;
 import br.com.tech.challenger.api_restaurante.application.exception.LoginAlreadyExistsException;
 import br.com.tech.challenger.api_restaurante.application.exception.UserNotFoundException;
+import br.com.tech.challenger.api_restaurante.application.exception.UserTypeNotFoundException;
 import br.com.tech.challenger.api_restaurante.application.mapper.UserAddressDtoMapper;
 import br.com.tech.challenger.api_restaurante.application.mapper.UserDtoMapper;
 import br.com.tech.challenger.api_restaurante.domain.entity.User;
@@ -28,15 +29,15 @@ public class UserUseCase {
 
     public UserDTO create(UserDTO dto) {
         if (repository.existsByEmail(dto.email())) {
-            throw new IllegalArgumentException("Email already exists");
+            throw new EmailAlreadyExistsException("Email already exists");
         }
 
         if (repository.existsByLogin(dto.login())) {
-            throw new IllegalArgumentException("Login already exists");
+            throw new LoginAlreadyExistsException("Login already exists");
         }
 
         UserType userType = userTypeRepository.findById(dto.userTypeId())
-                .orElseThrow(() -> new UserNotFoundException("User type not found"));
+                .orElseThrow(() -> new UserTypeNotFoundException("User type not found"));
 
         UserAddress userAddress = userAddressDtoMapper.buildUserAddressFromDTO(dto.userAddress());
 

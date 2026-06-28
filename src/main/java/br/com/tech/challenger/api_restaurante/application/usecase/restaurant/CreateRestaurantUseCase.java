@@ -27,8 +27,8 @@ public class CreateRestaurantUseCase {
 
         Restaurant restaurant = Restaurant.create(
                 restaurantDTO.name(),
-                restaurantDTO.cuisineType(),
                 restaurantDTO.address(),
+                restaurantDTO.cuisineType(),
                 restaurantDTO.operatingHours(),
                 owner);
 

@@ -12,6 +12,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -38,10 +39,9 @@ public class RestaurantController {
             @ApiResponse(responseCode = "201", description = "Restaurant created successfully",
                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = RestaurantDTO.class))),
             @ApiResponse(responseCode = "400", description = "Invalid input data"),
-            @ApiResponse(responseCode = "409", description = "Email or login already exists")
     })
     @PostMapping
-    public ResponseEntity<RestaurantDTO> create(@RequestBody RestaurantRequestDTO dto) {
+    public ResponseEntity<RestaurantDTO> create(@RequestBody @Valid RestaurantRequestDTO dto) {
         RestaurantDTO restaurantDto = restaurantDtoMapper.toDto(createRestaurantUseCase.execute(dto));
         return ResponseEntity.status(HttpStatus.CREATED).body(restaurantDto);
     }
@@ -77,13 +77,12 @@ public class RestaurantController {
                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = RestaurantDTO.class))),
             @ApiResponse(responseCode = "404", description = "Restaurant not found"),
             @ApiResponse(responseCode = "400", description = "Invalid input data"),
-            @ApiResponse(responseCode = "409", description = "Email or login already exists")
     })
     @PutMapping("/{id}")
     public ResponseEntity<RestaurantDTO> update(
             @Parameter(description = "Restaurant ID", required = true)
             @PathVariable Long id,
-            @RequestBody RestaurantRequestDTO dto) throws RestaurantNotFoundException {
+            @RequestBody @Valid RestaurantRequestDTO dto) throws RestaurantNotFoundException {
         RestaurantDTO updated = restaurantDtoMapper.toDto(updateRestaurantUseCase.execute(id, dto));
         return ResponseEntity.ok(updated);
     }

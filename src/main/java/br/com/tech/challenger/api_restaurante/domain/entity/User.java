@@ -30,7 +30,7 @@ public class User {
     private LocalDateTime updatedAt;
 
     public boolean canOwnRestaurant() {
-        return this.userType.getName().equals(UserTypeEnum.RESTAURANT_OWNER.name());
+        return this.userType != null && this.userType.getName().equals(UserTypeEnum.RESTAURANT_OWNER.name());
     }
 
 }

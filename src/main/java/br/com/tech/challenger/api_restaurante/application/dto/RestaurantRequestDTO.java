@@ -1,7 +1,6 @@
 package br.com.tech.challenger.api_restaurante.application.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
@@ -25,7 +24,6 @@ public record RestaurantRequestDTO (
 
         @Schema(description = "Restaurant's owner ID", requiredMode = Schema.RequiredMode.REQUIRED)
         @NotNull(message = "Restaurant must be registered with an owner")
-        @Valid
         Long ownerId
 ) {
 }

@@ -48,6 +48,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/v1/restaurants").permitAll()
                         .requestMatchers(HttpMethod.PUT, "/v1/restaurants/**").permitAll()
                         .requestMatchers(HttpMethod.DELETE, "/v1/restaurants/**").permitAll()
+                        .requestMatchers("/error").permitAll()
                         // TODO: adicionar endpoint de autenticação (ex: POST /auth/login)
                         // .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
                         .anyRequest().authenticated()
