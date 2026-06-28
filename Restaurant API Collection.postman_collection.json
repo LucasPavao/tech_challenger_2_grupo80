@@ -3,9 +3,7 @@
 		"_postman_id": "fc2b9c05-ce5b-414d-8736-b3f11e7b12d4",
 		"name": "Restaurant API Collection",
 		"description": "Collection for testing User Management API endpoints",
-		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "53903719",
-		"_collection_link": "https://lvitors8246-5083502.postman.co/workspace/Lucas-Victor's-Workspace~649138d3-160e-47a2-8a12-bea164e179b5/collection/53903719-fc2b9c05-ce5b-414d-8736-b3f11e7b12d4?action=share&source=collection_link&creator=53903719"
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"item": [
 		{
