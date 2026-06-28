@@ -2,7 +2,6 @@ package br.com.tech.challenger.api_restaurante.infrastructure.presentation.contr
 
 import br.com.tech.challenger.api_restaurante.application.dto.RestaurantDTO;
 import br.com.tech.challenger.api_restaurante.application.dto.RestaurantRequestDTO;
-import br.com.tech.challenger.api_restaurante.application.exception.RestaurantNotFoundException;
 import br.com.tech.challenger.api_restaurante.application.mapper.RestaurantDtoMapper;
 import br.com.tech.challenger.api_restaurante.application.usecase.restaurant.*;
 import io.swagger.v3.oas.annotations.Operation;
@@ -82,7 +81,7 @@ public class RestaurantController {
     public ResponseEntity<RestaurantDTO> update(
             @Parameter(description = "Restaurant ID", required = true)
             @PathVariable Long id,
-            @RequestBody @Valid RestaurantRequestDTO dto) throws RestaurantNotFoundException {
+            @RequestBody @Valid RestaurantRequestDTO dto) {
         RestaurantDTO updated = restaurantDtoMapper.toDto(updateRestaurantUseCase.execute(id, dto));
         return ResponseEntity.ok(updated);
     }
