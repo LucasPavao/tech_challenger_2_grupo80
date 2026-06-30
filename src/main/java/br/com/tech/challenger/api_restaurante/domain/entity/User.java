@@ -1,5 +1,6 @@
 package br.com.tech.challenger.api_restaurante.domain.entity;
 
+import br.com.tech.challenger.api_restaurante.application.enums.UserTypeEnum;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -27,4 +28,9 @@ public class User {
 
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+
+    public boolean canOwnRestaurant() {
+        return this.userType != null && this.userType.getName().equals(UserTypeEnum.RESTAURANT_OWNER.name());
+    }
+
 }

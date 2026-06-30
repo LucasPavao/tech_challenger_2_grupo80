@@ -1,6 +1,7 @@
 package br.com.tech.challenger.api_restaurante.application.usecase.usertype;
 
 import br.com.tech.challenger.api_restaurante.application.dto.UserTypeDTO;
+import br.com.tech.challenger.api_restaurante.application.exception.UserTypeNotFoundException;
 import br.com.tech.challenger.api_restaurante.domain.entity.UserType;
 import br.com.tech.challenger.api_restaurante.domain.repository.UserTypeRepository;
 import lombok.RequiredArgsConstructor;
@@ -49,7 +50,7 @@ public class UserTypeUseCase {
 
         UserType userType = repository.findById(id)
                 .orElseThrow(() ->
-                        new RuntimeException("User type not found"));
+                        new UserTypeNotFoundException("User type not found"));
 
         return new UserTypeDTO(
                 userType.getId(),
@@ -61,7 +62,7 @@ public class UserTypeUseCase {
 
         UserType userType = repository.findById(id)
                 .orElseThrow(() ->
-                        new RuntimeException("User type not found"));
+                        new UserTypeNotFoundException("User type not found"));
 
         userType.setName(dto.name());
 
@@ -77,7 +78,7 @@ public class UserTypeUseCase {
 
         repository.findById(id)
                 .orElseThrow(() ->
-                        new RuntimeException("User type not found"));
+                        new UserTypeNotFoundException("User type not found"));
 
         repository.deleteById(id);
     }
