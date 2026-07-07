@@ -1,6 +1,6 @@
 package br.com.tech.challenger.api_restaurante.domain.entity;
 
-import br.com.tech.challenger.api_restaurante.application.enums.UserTypeEnum;
+import br.com.tech.challenger.api_restaurante.domain.enums.UserTypeEnum;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;

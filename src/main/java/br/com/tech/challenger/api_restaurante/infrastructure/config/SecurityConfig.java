@@ -51,7 +51,14 @@ public class SecurityConfig {
                         .requestMatchers("/error").permitAll()
                         // TODO: adicionar endpoint de autenticação (ex: POST /auth/login)
                         // .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
+                        // Allow public endpoints for menu items (controllers under /v1/menu-items)
+                        .requestMatchers(HttpMethod.GET, "/v1/menu-items/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/v1/menu-items").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/v1/menu-items").permitAll()
+                        .requestMatchers(HttpMethod.PUT, "/v1/menu-items/**").permitAll()
+                        .requestMatchers(HttpMethod.DELETE, "/v1/menu-items/**").permitAll()
                         .anyRequest().authenticated()
+
                 );
 
         // TODO: adicionar filtro JWT antes do UsernamePasswordAuthenticationFilter
