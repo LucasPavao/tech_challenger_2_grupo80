@@ -1,7 +1,11 @@
 package br.com.tech.challenger.api_restaurante.infrastructure.presentation.controller;
 
 import br.com.tech.challenger.api_restaurante.application.dto.UserTypeDTO;
-import br.com.tech.challenger.api_restaurante.application.usecase.usertype.UserTypeUseCase;
+import br.com.tech.challenger.api_restaurante.application.usecase.usertype.CreateUserTypeUseCase;
+import br.com.tech.challenger.api_restaurante.application.usecase.usertype.DeleteUserTypeUseCase;
+import br.com.tech.challenger.api_restaurante.application.usecase.usertype.FindUserTypeByIdUseCase;
+import br.com.tech.challenger.api_restaurante.application.usecase.usertype.FindUserTypeUseCase;
+import br.com.tech.challenger.api_restaurante.application.usecase.usertype.UpdateUserTypeUseCase;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -29,7 +33,11 @@ import java.util.List;
 @Tag(name = "User Types", description = "User type management endpoints")
 public class UserTypeController {
 
-    private final UserTypeUseCase userTypeUseCase;
+    private final CreateUserTypeUseCase createUserTypeUseCase;
+    private final FindUserTypeUseCase findUserTypeUseCase;
+    private final FindUserTypeByIdUseCase findUserTypeByIdUseCase;
+    private final UpdateUserTypeUseCase updateUserTypeUseCase;
+    private final DeleteUserTypeUseCase deleteUserTypeUseCase;
 
     @Operation(summary = "Create a new user type")
     @ApiResponses({
@@ -40,7 +48,7 @@ public class UserTypeController {
     })
     @PostMapping
     public ResponseEntity<UserTypeDTO> create(@RequestBody UserTypeDTO dto) {
-        UserTypeDTO created = userTypeUseCase.create(dto);
+        UserTypeDTO created = createUserTypeUseCase.execute(dto);
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
@@ -51,7 +59,7 @@ public class UserTypeController {
     })
     @GetMapping
     public ResponseEntity<List<UserTypeDTO>> findAll() {
-        List<UserTypeDTO> userTypes = userTypeUseCase.findAll();
+        List<UserTypeDTO> userTypes = findUserTypeUseCase.execute();
         return ResponseEntity.ok(userTypes);
     }
 
@@ -65,7 +73,7 @@ public class UserTypeController {
     public ResponseEntity<UserTypeDTO> findById(
             @Parameter(description = "User type ID", required = true)
             @PathVariable Long id) {
-        UserTypeDTO userType = userTypeUseCase.findById(id);
+        UserTypeDTO userType = findUserTypeByIdUseCase.execute(id);
         return ResponseEntity.ok(userType);
     }
 
@@ -82,7 +90,7 @@ public class UserTypeController {
             @Parameter(description = "User type ID", required = true)
             @PathVariable Long id,
             @RequestBody UserTypeDTO dto) {
-        UserTypeDTO updated = userTypeUseCase.update(id, dto);
+        UserTypeDTO updated = updateUserTypeUseCase.execute(id, dto);
         return ResponseEntity.ok(updated);
     }
 
@@ -95,7 +103,7 @@ public class UserTypeController {
     public ResponseEntity<Void> delete(
             @Parameter(description = "User type ID", required = true)
             @PathVariable Long id) {
-        userTypeUseCase.delete(id);
+        deleteUserTypeUseCase.execute(id);
         return ResponseEntity.noContent().build();
     }
 }
