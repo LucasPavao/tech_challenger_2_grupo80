@@ -2,6 +2,9 @@
 .env
 .env.prod
 
+## Superpowers scratch state ##
+.superpowers/
+
 HELP.md
 target/
 .mvn/wrapper/maven-wrapper.jar
