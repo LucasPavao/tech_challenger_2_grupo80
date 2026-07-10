@@ -4,7 +4,13 @@ import br.com.tech.challenger.api_restaurante.application.dto.UserAddressDTO;
 import br.com.tech.challenger.api_restaurante.application.dto.UserDTO;
 import br.com.tech.challenger.api_restaurante.application.exception.EmailAlreadyExistsException;
 import br.com.tech.challenger.api_restaurante.application.exception.UserNotFoundException;
-import br.com.tech.challenger.api_restaurante.application.usecase.user.UserUseCase;
+import br.com.tech.challenger.api_restaurante.application.usecase.user.CreateUserUseCase;
+import br.com.tech.challenger.api_restaurante.application.usecase.user.DeleteUserUseCase;
+import br.com.tech.challenger.api_restaurante.application.usecase.user.FindUserByEmailUseCase;
+import br.com.tech.challenger.api_restaurante.application.usecase.user.FindUserByIdUseCase;
+import br.com.tech.challenger.api_restaurante.application.usecase.user.FindUserByLoginUseCase;
+import br.com.tech.challenger.api_restaurante.application.usecase.user.FindUserUseCase;
+import br.com.tech.challenger.api_restaurante.application.usecase.user.UpdateUserUseCase;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -25,13 +31,35 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class UserControllerTest {
 
     private MockMvc mockMvc;
-    private UserUseCase useCase;
+
+    private CreateUserUseCase createUserUseCase;
+    private FindUserUseCase findUserUseCase;
+    private FindUserByIdUseCase findUserByIdUseCase;
+    private FindUserByEmailUseCase findUserByEmailUseCase;
+    private FindUserByLoginUseCase findUserByLoginUseCase;
+    private UpdateUserUseCase updateUserUseCase;
+    private DeleteUserUseCase deleteUserUseCase;
+
     private ObjectMapper objectMapper;
 
     @BeforeEach
     void setUp() {
-        useCase = Mockito.mock(UserUseCase.class);
-        UserController controller = new UserController(useCase);
+        createUserUseCase = Mockito.mock(CreateUserUseCase.class);
+        findUserUseCase = Mockito.mock(FindUserUseCase.class);
+        findUserByIdUseCase = Mockito.mock(FindUserByIdUseCase.class);
+        findUserByEmailUseCase = Mockito.mock(FindUserByEmailUseCase.class);
+        findUserByLoginUseCase = Mockito.mock(FindUserByLoginUseCase.class);
+        updateUserUseCase = Mockito.mock(UpdateUserUseCase.class);
+        deleteUserUseCase = Mockito.mock(DeleteUserUseCase.class);
+
+        UserController controller = new UserController(
+                createUserUseCase,
+                findUserUseCase,
+                findUserByIdUseCase,
+                findUserByEmailUseCase,
+                findUserByLoginUseCase,
+                updateUserUseCase,
+                deleteUserUseCase);
         mockMvc = MockMvcBuilders.standaloneSetup(controller).build();
         objectMapper = new ObjectMapper();
     }
@@ -41,7 +69,7 @@ class UserControllerTest {
         UserAddressDTO exampleAddressDTO = new UserAddressDTO(1L, "Rua Teste", "São Paulo", "100", null, "SP", "00000-000", "Brasil");
         UserDTO exampleDto = new UserDTO(1L, "User", "teste@email.com", "login", "password", 1L, exampleAddressDTO);
 
-        when(useCase.findAll()).thenReturn(List.of(exampleDto));
+        when(findUserUseCase.execute()).thenReturn(List.of(exampleDto));
 
         mockMvc.perform(get("/v1/users"))
                 .andExpect(status().isOk())
@@ -56,7 +84,7 @@ class UserControllerTest {
         UserDTO request = new UserDTO(null, "User", "teste@email.com", "login", "password", 1L, exampleAddressDTO);
         UserDTO response = new UserDTO(1L, "User", "teste@email.com", "login", "password", 1L, exampleAddressDTO);
 
-        when(useCase.create(any(UserDTO.class))).thenReturn(response);
+        when(createUserUseCase.execute(any(UserDTO.class))).thenReturn(response);
 
         mockMvc.perform(post("/v1/users")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -71,7 +99,7 @@ class UserControllerTest {
         UserAddressDTO exampleAddressDTO = new UserAddressDTO(null, "Rua Teste", "São Paulo", "100", null, "SP", "00000-000", "Brasil");
         UserDTO request = new UserDTO(null, "User", "teste@email.com", "login", "password", 1L, exampleAddressDTO);
 
-        when(useCase.create(any(UserDTO.class))).thenThrow(new EmailAlreadyExistsException("Email already exists"));
+        when(createUserUseCase.execute(any(UserDTO.class))).thenThrow(new EmailAlreadyExistsException("Email already exists"));
 
         mockMvc.perform(post("/v1/users")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -84,7 +112,7 @@ class UserControllerTest {
         UserAddressDTO exampleAddressDTO = new UserAddressDTO(1L, "Rua Teste", "São Paulo", "100", null, "SP", "00000-000", "Brasil");
         UserDTO exampleDto = new UserDTO(1L, "User", "teste@email.com", "login", "password", 1L, exampleAddressDTO);
 
-        when(useCase.findById(1L)).thenReturn(exampleDto);
+        when(findUserByIdUseCase.execute(1L)).thenReturn(exampleDto);
 
         mockMvc.perform(get("/v1/users/1"))
                 .andExpect(status().isOk())
@@ -94,7 +122,7 @@ class UserControllerTest {
 
     @Test
     void findById_whenNotFound_shouldReturnBadRequest() throws Exception {
-        when(useCase.findById(99L)).thenThrow(new UserNotFoundException("User not found"));
+        when(findUserByIdUseCase.execute(99L)).thenThrow(new UserNotFoundException("User not found"));
 
         mockMvc.perform(get("/v1/users/99"))
                 .andExpect(status().isBadRequest());
@@ -105,7 +133,7 @@ class UserControllerTest {
         UserAddressDTO exampleAddressDTO = new UserAddressDTO(1L, "Rua Teste", "São Paulo", "100", null, "SP", "00000-000", "Brasil");
         UserDTO exampleDto = new UserDTO(1L, "User", "teste@email.com", "login", "password", 1L, exampleAddressDTO);
 
-        when(useCase.findByName("User")).thenReturn(List.of(exampleDto));
+        when(findUserUseCase.executeByName("User")).thenReturn(List.of(exampleDto));
 
         mockMvc.perform(get("/v1/users/search/by-name").param("name", "User"))
                 .andExpect(status().isOk())
@@ -118,7 +146,7 @@ class UserControllerTest {
         UserAddressDTO exampleAddressDTO = new UserAddressDTO(1L, "Rua Teste", "São Paulo", "100", null, "SP", "00000-000", "Brasil");
         UserDTO exampleDto = new UserDTO(1L, "User", "teste@email.com", "login", "password", 1L, exampleAddressDTO);
 
-        when(useCase.findByEmail("teste@email.com")).thenReturn(exampleDto);
+        when(findUserByEmailUseCase.execute("teste@email.com")).thenReturn(exampleDto);
 
         mockMvc.perform(get("/v1/users/search/by-email").param("email", "teste@email.com"))
                 .andExpect(status().isOk())
@@ -127,7 +155,7 @@ class UserControllerTest {
 
     @Test
     void findByEmail_whenNotFound_shouldReturnBadRequest() throws Exception {
-        when(useCase.findByEmail("naoexiste@email.com")).thenThrow(new UserNotFoundException("User not found"));
+        when(findUserByEmailUseCase.execute("naoexiste@email.com")).thenThrow(new UserNotFoundException("User not found"));
 
         mockMvc.perform(get("/v1/users/search/by-email").param("email", "naoexiste@email.com"))
                 .andExpect(status().isBadRequest());
@@ -138,7 +166,7 @@ class UserControllerTest {
         UserAddressDTO exampleAddressDTO = new UserAddressDTO(1L, "Rua Teste", "São Paulo", "100", null, "SP", "00000-000", "Brasil");
         UserDTO exampleDto = new UserDTO(1L, "User", "teste@email.com", "login", "password", 1L, exampleAddressDTO);
 
-        when(useCase.findByLogin("login")).thenReturn(exampleDto);
+        when(findUserByLoginUseCase.execute("login")).thenReturn(exampleDto);
 
         mockMvc.perform(get("/v1/users/search/by-login").param("login", "login"))
                 .andExpect(status().isOk())
@@ -147,7 +175,7 @@ class UserControllerTest {
 
     @Test
     void findByLogin_whenNotFound_shouldReturnBadRequest() throws Exception {
-        when(useCase.findByLogin("naoexiste")).thenThrow(new UserNotFoundException("User not found"));
+        when(findUserByLoginUseCase.execute("naoexiste")).thenThrow(new UserNotFoundException("User not found"));
 
         mockMvc.perform(get("/v1/users/search/by-login").param("login", "naoexiste"))
                 .andExpect(status().isBadRequest());
@@ -159,7 +187,7 @@ class UserControllerTest {
         UserDTO request = new UserDTO(null, "User Atualizado", "teste@email.com", "login", "password", 1L, exampleAddressDTO);
         UserDTO response = new UserDTO(1L, "User Atualizado", "teste@email.com", "login", "password", 1L, exampleAddressDTO);
 
-        when(useCase.update(any(Long.class), any(UserDTO.class))).thenReturn(response);
+        when(updateUserUseCase.execute(any(Long.class), any(UserDTO.class))).thenReturn(response);
 
         mockMvc.perform(put("/v1/users/1")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -174,7 +202,7 @@ class UserControllerTest {
         UserAddressDTO exampleAddressDTO = new UserAddressDTO(1L, "Rua Teste", "São Paulo", "100", null, "SP", "00000-000", "Brasil");
         UserDTO request = new UserDTO(null, "User Atualizado", "teste@email.com", "login", "password", 1L, exampleAddressDTO);
 
-        when(useCase.update(any(Long.class), any(UserDTO.class))).thenThrow(new UserNotFoundException("User not found"));
+        when(updateUserUseCase.execute(any(Long.class), any(UserDTO.class))).thenThrow(new UserNotFoundException("User not found"));
 
         mockMvc.perform(put("/v1/users/99")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -184,7 +212,7 @@ class UserControllerTest {
 
     @Test
     void delete_shouldReturnNoContent() throws Exception {
-        doNothing().when(useCase).delete(1L);
+        doNothing().when(deleteUserUseCase).execute(1L);
 
         mockMvc.perform(delete("/v1/users/1"))
                 .andExpect(status().isNoContent());
@@ -192,7 +220,7 @@ class UserControllerTest {
 
     @Test
     void delete_whenNotFound_shouldReturnBadRequest() throws Exception {
-        doThrow(new UserNotFoundException("User not found")).when(useCase).delete(99L);
+        doThrow(new UserNotFoundException("User not found")).when(deleteUserUseCase).execute(99L);
 
         mockMvc.perform(delete("/v1/users/99"))
                 .andExpect(status().isBadRequest());

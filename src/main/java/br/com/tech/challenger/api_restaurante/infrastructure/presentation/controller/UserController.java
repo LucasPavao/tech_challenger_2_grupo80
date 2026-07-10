@@ -1,7 +1,13 @@
 package br.com.tech.challenger.api_restaurante.infrastructure.presentation.controller;
 
 import br.com.tech.challenger.api_restaurante.application.dto.UserDTO;
-import br.com.tech.challenger.api_restaurante.application.usecase.user.UserUseCase;
+import br.com.tech.challenger.api_restaurante.application.usecase.user.CreateUserUseCase;
+import br.com.tech.challenger.api_restaurante.application.usecase.user.DeleteUserUseCase;
+import br.com.tech.challenger.api_restaurante.application.usecase.user.FindUserByEmailUseCase;
+import br.com.tech.challenger.api_restaurante.application.usecase.user.FindUserByIdUseCase;
+import br.com.tech.challenger.api_restaurante.application.usecase.user.FindUserByLoginUseCase;
+import br.com.tech.challenger.api_restaurante.application.usecase.user.FindUserUseCase;
+import br.com.tech.challenger.api_restaurante.application.usecase.user.UpdateUserUseCase;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -30,7 +36,13 @@ import java.util.List;
 @Tag(name = "Users", description = "User management endpoints")
 public class UserController {
 
-    private final UserUseCase userUseCase;
+    private final CreateUserUseCase createUserUseCase;
+    private final FindUserUseCase findUserUseCase;
+    private final FindUserByIdUseCase findUserByIdUseCase;
+    private final FindUserByEmailUseCase findUserByEmailUseCase;
+    private final FindUserByLoginUseCase findUserByLoginUseCase;
+    private final UpdateUserUseCase updateUserUseCase;
+    private final DeleteUserUseCase deleteUserUseCase;
 
     @Operation(summary = "Create a new user")
     @ApiResponses({
@@ -41,7 +53,7 @@ public class UserController {
     })
     @PostMapping
     public ResponseEntity<UserDTO> create(@RequestBody UserDTO dto) {
-        UserDTO created = userUseCase.create(dto);
+        UserDTO created = createUserUseCase.execute(dto);
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
@@ -52,7 +64,7 @@ public class UserController {
     })
     @GetMapping
     public ResponseEntity<List<UserDTO>> findAll() {
-        List<UserDTO> users = userUseCase.findAll();
+        List<UserDTO> users = findUserUseCase.execute();
         return ResponseEntity.ok(users);
     }
 
@@ -66,7 +78,7 @@ public class UserController {
     public ResponseEntity<UserDTO> findById(
             @Parameter(description = "User ID", required = true)
             @PathVariable Long id) {
-        UserDTO user = userUseCase.findById(id);
+        UserDTO user = findUserByIdUseCase.execute(id);
         return ResponseEntity.ok(user);
     }
 
@@ -79,7 +91,7 @@ public class UserController {
     public ResponseEntity<List<UserDTO>> findByName(
             @Parameter(description = "User name to search for", required = true)
             @RequestParam String name) {
-        List<UserDTO> users = userUseCase.findByName(name);
+        List<UserDTO> users = findUserUseCase.executeByName(name);
         return ResponseEntity.ok(users);
     }
 
@@ -93,7 +105,7 @@ public class UserController {
     public ResponseEntity<UserDTO> findByEmail(
             @Parameter(description = "User email", required = true)
             @RequestParam String email) {
-        UserDTO user = userUseCase.findByEmail(email);
+        UserDTO user = findUserByEmailUseCase.execute(email);
         return ResponseEntity.ok(user);
     }
 
@@ -107,7 +119,7 @@ public class UserController {
     public ResponseEntity<UserDTO> findByLogin(
             @Parameter(description = "User login", required = true)
             @RequestParam String login) {
-        UserDTO user = userUseCase.findByLogin(login);
+        UserDTO user = findUserByLoginUseCase.execute(login);
         return ResponseEntity.ok(user);
     }
 
@@ -124,7 +136,7 @@ public class UserController {
             @Parameter(description = "User ID", required = true)
             @PathVariable Long id,
             @RequestBody UserDTO dto) {
-        UserDTO updated = userUseCase.update(id, dto);
+        UserDTO updated = updateUserUseCase.execute(id, dto);
         return ResponseEntity.ok(updated);
     }
 
@@ -137,7 +149,7 @@ public class UserController {
     public ResponseEntity<Void> delete(
             @Parameter(description = "User ID", required = true)
             @PathVariable Long id) {
-        userUseCase.delete(id);
+        deleteUserUseCase.execute(id);
         return ResponseEntity.noContent().build();
     }
 }
