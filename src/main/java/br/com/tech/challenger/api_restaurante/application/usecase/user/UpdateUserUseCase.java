@@ -11,6 +11,7 @@ import br.com.tech.challenger.api_restaurante.domain.entity.UserType;
 import br.com.tech.challenger.api_restaurante.domain.repository.UserRepository;
 import br.com.tech.challenger.api_restaurante.domain.repository.UserTypeRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -21,6 +22,7 @@ public class UpdateUserUseCase {
     private final UserTypeRepository userTypeRepository;
     private final UserDtoMapper userDtoMapper;
     private final UserAddressDtoMapper userAddressDtoMapper;
+    private final PasswordEncoder passwordEncoder;
 
     public UserDTO execute(Long id, UserDTO dto) {
         User user = userRepository.findById(id)
@@ -40,7 +42,7 @@ public class UpdateUserUseCase {
         user.setName(dto.name());
         user.setEmail(dto.email());
         user.setLogin(dto.login());
-        user.setPassword(dto.password());
+        user.setPassword(passwordEncoder.encode(dto.password()));
         user.setUserType(userType);
         user.setUserAddress(userAddressDtoMapper.buildUserAddressForUpdate(user.getUserAddress(), dto.userAddress()));
 

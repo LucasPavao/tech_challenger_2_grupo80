@@ -12,6 +12,7 @@ import br.com.tech.challenger.api_restaurante.domain.entity.UserType;
 import br.com.tech.challenger.api_restaurante.domain.repository.UserRepository;
 import br.com.tech.challenger.api_restaurante.domain.repository.UserTypeRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -22,6 +23,7 @@ public class CreateUserUseCase {
     private final UserTypeRepository userTypeRepository;
     private final UserDtoMapper userDtoMapper;
     private final UserAddressDtoMapper userAddressDtoMapper;
+    private final PasswordEncoder passwordEncoder;
 
     public UserDTO execute(UserDTO dto) {
         if (userRepository.existsByEmail(dto.email())) {
@@ -41,7 +43,7 @@ public class CreateUserUseCase {
                 .name(dto.name())
                 .email(dto.email())
                 .login(dto.login())
-                .password(dto.password())
+                .password(passwordEncoder.encode(dto.password()))
                 .userType(userType)
                 .userAddress(userAddress)
                 .build();

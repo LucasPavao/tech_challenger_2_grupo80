@@ -15,8 +15,10 @@ import br.com.tech.challenger.api_restaurante.domain.repository.UserTypeReposito
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
@@ -35,6 +37,9 @@ class UpdateUserUseCaseTest {
     @Mock
     private UserTypeRepository userTypeRepository;
 
+    @Mock
+    private PasswordEncoder passwordEncoder;
+
     private UpdateUserUseCase useCase;
 
     private UserType exampleUserType;
@@ -43,7 +48,7 @@ class UpdateUserUseCaseTest {
 
     @BeforeEach
     void setUp() {
-        useCase = new UpdateUserUseCase(repository, userTypeRepository, new UserDtoMapper(new UserAddressDtoMapper()), new UserAddressDtoMapper());
+        useCase = new UpdateUserUseCase(repository, userTypeRepository, new UserDtoMapper(new UserAddressDtoMapper()), new UserAddressDtoMapper(), passwordEncoder);
 
         exampleUserType = UserType.builder()
                 .id(1L)
@@ -91,9 +96,10 @@ class UpdateUserUseCaseTest {
     }
 
     @Test
-    void execute_success() {
+    void execute_success_hashesPasswordBeforeSaving() {
         when(repository.findById(1L)).thenReturn(Optional.of(exampleUser));
         when(userTypeRepository.findById(1L)).thenReturn(Optional.of(exampleUserType));
+        when(passwordEncoder.encode("novaSenha")).thenReturn("hashed-new-password");
         when(repository.save(any(User.class))).thenAnswer(inv -> inv.getArgument(0));
 
         UserDTO updateDto = new UserDTO(null, "User Atualizado", "teste@email.com", "login", "novaSenha", 1L, exampleAddressDTO);
@@ -101,7 +107,10 @@ class UpdateUserUseCaseTest {
         UserDTO updated = useCase.execute(1L, updateDto);
 
         assertThat(updated.name()).isEqualTo("User Atualizado");
-        verify(repository).save(any(User.class));
+
+        ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
+        verify(repository).save(userCaptor.capture());
+        assertThat(userCaptor.getValue().getPassword()).isEqualTo("hashed-new-password");
     }
 
     @Test

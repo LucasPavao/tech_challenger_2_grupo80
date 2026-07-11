@@ -15,8 +15,10 @@ import br.com.tech.challenger.api_restaurante.domain.repository.UserTypeReposito
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
@@ -35,6 +37,9 @@ class CreateUserUseCaseTest {
     @Mock
     private UserTypeRepository userTypeRepository;
 
+    @Mock
+    private PasswordEncoder passwordEncoder;
+
     private CreateUserUseCase useCase;
 
     private UserType exampleUserType;
@@ -44,7 +49,7 @@ class CreateUserUseCaseTest {
 
     @BeforeEach
     void setUp() {
-        useCase = new CreateUserUseCase(repository, userTypeRepository, new UserDtoMapper(new UserAddressDtoMapper()), new UserAddressDtoMapper());
+        useCase = new CreateUserUseCase(repository, userTypeRepository, new UserDtoMapper(new UserAddressDtoMapper()), new UserAddressDtoMapper(), passwordEncoder);
 
         exampleUserType = UserType.builder()
                 .id(1L)
@@ -68,7 +73,7 @@ class CreateUserUseCaseTest {
                 .name("User")
                 .email("teste@email.com")
                 .login("login")
-                .password("password")
+                .password("hashed-password")
                 .userType(exampleUserType)
                 .userAddress(exampleAddress)
                 .createdAt(LocalDateTime.now())
@@ -116,10 +121,11 @@ class CreateUserUseCaseTest {
     }
 
     @Test
-    void execute_success() {
+    void execute_success_hashesPasswordBeforeSaving() {
         when(repository.existsByEmail("teste@email.com")).thenReturn(false);
         when(repository.existsByLogin("login")).thenReturn(false);
         when(userTypeRepository.findById(1L)).thenReturn(Optional.of(exampleUserType));
+        when(passwordEncoder.encode("password")).thenReturn("hashed-password");
         when(repository.save(any(User.class))).thenReturn(exampleUser);
 
         UserDTO result = useCase.execute(exampleDto);
@@ -129,6 +135,8 @@ class CreateUserUseCaseTest {
         assertThat(result.email()).isEqualTo("teste@email.com");
         assertThat(result.userTypeId()).isEqualTo(1L);
 
-        verify(repository).save(any(User.class));
+        ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
+        verify(repository).save(userCaptor.capture());
+        assertThat(userCaptor.getValue().getPassword()).isEqualTo("hashed-password");
     }
 }
