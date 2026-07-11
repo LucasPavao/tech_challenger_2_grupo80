@@ -1,16 +1,24 @@
 package br.com.tech.challenger.api_restaurante.infrastructure.config;
 
+import br.com.tech.challenger.api_restaurante.infrastructure.security.JwtAuthenticationFilter;
+import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
 @EnableWebSecurity
+@RequiredArgsConstructor
 public class SecurityConfig {
 
     // Endpoints do Swagger/OpenAPI liberados sem autenticação
@@ -22,47 +30,35 @@ public class SecurityConfig {
             "/v3/api-docs.yaml"
     };
 
+    private final JwtAuthenticationFilter jwtAuthenticationFilter;
+
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) {
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
+
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
+        return authenticationConfiguration.getAuthenticationManager();
+    }
+
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(SWAGGER_WHITELIST).permitAll()
-                        // Allow public endpoints for users
-                        .requestMatchers(HttpMethod.GET, "/v1/users/**").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/v1/users").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/v1/users").permitAll()
-                        .requestMatchers(HttpMethod.PUT, "/v1/users/**").permitAll()
-                        .requestMatchers(HttpMethod.DELETE, "/v1/users/**").permitAll()
-                        // Allow public endpoints for user types (controllers under /v1/user-types)
-                        .requestMatchers(HttpMethod.GET, "/v1/user-types/**").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/v1/user-types").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/v1/user-types").permitAll()
-                        .requestMatchers(HttpMethod.PUT, "/v1/user-types/**").permitAll()
-                        .requestMatchers(HttpMethod.DELETE, "/v1/user-types/**").permitAll()
-                        // Allow public endpoints for user types (controllers under /v1/restaurant)
-                        .requestMatchers(HttpMethod.GET, "/v1/restaurants/**").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/v1/restaurants").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/v1/restaurants").permitAll()
-                        .requestMatchers(HttpMethod.PUT, "/v1/restaurants/**").permitAll()
-                        .requestMatchers(HttpMethod.DELETE, "/v1/restaurants/**").permitAll()
+                        .requestMatchers("/v1/auth/**").permitAll()
                         .requestMatchers("/error").permitAll()
-                        // TODO: adicionar endpoint de autenticação (ex: POST /auth/login)
-                        // .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
-                        // Allow public endpoints for menu items (controllers under /v1/menu-items)
-                        .requestMatchers(HttpMethod.GET, "/v1/menu-items/**").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/v1/menu-items").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/v1/menu-items").permitAll()
-                        .requestMatchers(HttpMethod.PUT, "/v1/menu-items/**").permitAll()
-                        .requestMatchers(HttpMethod.DELETE, "/v1/menu-items/**").permitAll()
                         .anyRequest().authenticated()
-
-                );
-
-        // TODO: adicionar filtro JWT antes do UsernamePasswordAuthenticationFilter
-        // http.addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+                )
+                .exceptionHandling(exception -> exception
+                        .authenticationEntryPoint((request, response, authException) ->
+                                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, authException.getMessage()))
+                )
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
