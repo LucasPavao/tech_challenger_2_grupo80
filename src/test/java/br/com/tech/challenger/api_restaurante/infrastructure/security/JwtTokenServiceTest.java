@@ -13,6 +13,7 @@ import java.time.temporal.ChronoUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.within;
 
 class JwtTokenServiceTest {
 
@@ -79,5 +80,29 @@ class JwtTokenServiceTest {
 
         assertThatThrownBy(() -> jwtTokenService.validateAccessToken(tampered))
                 .isInstanceOf(InvalidTokenException.class);
+    }
+
+    @Test
+    void validateRefreshToken_whenGivenAccessToken_thenThrow() {
+        TokenPair tokenPair = jwtTokenService.generateTokenPair(exampleUser);
+
+        assertThatThrownBy(() -> jwtTokenService.validateRefreshToken(tokenPair.accessToken()))
+                .isInstanceOf(InvalidTokenException.class);
+    }
+
+    @Test
+    void validateAccessToken_whenGivenRefreshToken_thenThrow() {
+        TokenPair tokenPair = jwtTokenService.generateTokenPair(exampleUser);
+
+        assertThatThrownBy(() -> jwtTokenService.validateAccessToken(tokenPair.refreshToken()))
+                .isInstanceOf(InvalidTokenException.class);
+    }
+
+    @Test
+    void generateTokenPair_expiresAtIsCloseToNow() {
+        TokenPair tokenPair = jwtTokenService.generateTokenPair(exampleUser);
+
+        assertThat(tokenPair.expiresAt())
+                .isCloseTo(Instant.now().plusSeconds(60 * 60), within(5, ChronoUnit.SECONDS));
     }
 }
