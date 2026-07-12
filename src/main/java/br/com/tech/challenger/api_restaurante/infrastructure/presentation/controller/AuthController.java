@@ -3,13 +3,16 @@ package br.com.tech.challenger.api_restaurante.infrastructure.presentation.contr
 import br.com.tech.challenger.api_restaurante.application.dto.AuthenticatedUserResponseDTO;
 import br.com.tech.challenger.api_restaurante.application.dto.LoginRequestDTO;
 import br.com.tech.challenger.api_restaurante.application.dto.RefreshTokenRequestDTO;
+import br.com.tech.challenger.api_restaurante.application.dto.RegisterRequestDTO;
 import br.com.tech.challenger.api_restaurante.application.dto.TokenResponseDTO;
 import br.com.tech.challenger.api_restaurante.application.usecase.auth.LoginUseCase;
 import br.com.tech.challenger.api_restaurante.application.usecase.auth.RefreshTokenUseCase;
+import br.com.tech.challenger.api_restaurante.application.usecase.auth.RegisterUseCase;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -19,11 +22,12 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/v1/auth")
 @RequiredArgsConstructor
-@Tag(name = "Authentication", description = "Login and token refresh endpoints")
+@Tag(name = "Authentication", description = "Login, registration, and token refresh endpoints")
 public class AuthController {
 
     private final LoginUseCase loginUseCase;
     private final RefreshTokenUseCase refreshTokenUseCase;
+    private final RegisterUseCase registerUseCase;
 
     @Operation(summary = "Authenticate with login and password")
     @PostMapping("/login")
@@ -35,5 +39,11 @@ public class AuthController {
     @PostMapping("/refresh-token")
     public ResponseEntity<TokenResponseDTO> refreshToken(@RequestBody @Valid RefreshTokenRequestDTO dto) {
         return ResponseEntity.ok(refreshTokenUseCase.execute(dto));
+    }
+
+    @Operation(summary = "Register a new customer account")
+    @PostMapping("/register")
+    public ResponseEntity<AuthenticatedUserResponseDTO> register(@RequestBody @Valid RegisterRequestDTO dto) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(registerUseCase.execute(dto));
     }
 }

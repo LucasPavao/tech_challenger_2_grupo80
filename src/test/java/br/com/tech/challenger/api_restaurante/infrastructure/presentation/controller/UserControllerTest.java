@@ -2,9 +2,7 @@ package br.com.tech.challenger.api_restaurante.infrastructure.presentation.contr
 
 import br.com.tech.challenger.api_restaurante.application.dto.UserAddressDTO;
 import br.com.tech.challenger.api_restaurante.application.dto.UserDTO;
-import br.com.tech.challenger.api_restaurante.application.exception.EmailAlreadyExistsException;
 import br.com.tech.challenger.api_restaurante.application.exception.UserNotFoundException;
-import br.com.tech.challenger.api_restaurante.application.usecase.user.CreateUserUseCase;
 import br.com.tech.challenger.api_restaurante.application.usecase.user.DeleteUserUseCase;
 import br.com.tech.challenger.api_restaurante.application.usecase.user.FindUserByEmailUseCase;
 import br.com.tech.challenger.api_restaurante.application.usecase.user.FindUserByIdUseCase;
@@ -32,7 +30,6 @@ class UserControllerTest {
 
     private MockMvc mockMvc;
 
-    private CreateUserUseCase createUserUseCase;
     private FindUserUseCase findUserUseCase;
     private FindUserByIdUseCase findUserByIdUseCase;
     private FindUserByEmailUseCase findUserByEmailUseCase;
@@ -44,7 +41,6 @@ class UserControllerTest {
 
     @BeforeEach
     void setUp() {
-        createUserUseCase = Mockito.mock(CreateUserUseCase.class);
         findUserUseCase = Mockito.mock(FindUserUseCase.class);
         findUserByIdUseCase = Mockito.mock(FindUserByIdUseCase.class);
         findUserByEmailUseCase = Mockito.mock(FindUserByEmailUseCase.class);
@@ -53,7 +49,6 @@ class UserControllerTest {
         deleteUserUseCase = Mockito.mock(DeleteUserUseCase.class);
 
         UserController controller = new UserController(
-                createUserUseCase,
                 findUserUseCase,
                 findUserByIdUseCase,
                 findUserByEmailUseCase,
@@ -76,35 +71,6 @@ class UserControllerTest {
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$[0].id").value(1))
                 .andExpect(jsonPath("$[0].name").value("User"));
-    }
-
-    @Test
-    void create_shouldReturnCreated() throws Exception {
-        UserAddressDTO exampleAddressDTO = new UserAddressDTO(null, "Rua Teste", "São Paulo", "100", null, "SP", "00000-000", "Brasil");
-        UserDTO request = new UserDTO(null, "User", "teste@email.com", "login", "password", 1L, exampleAddressDTO);
-        UserDTO response = new UserDTO(1L, "User", "teste@email.com", "login", "password", 1L, exampleAddressDTO);
-
-        when(createUserUseCase.execute(any(UserDTO.class))).thenReturn(response);
-
-        mockMvc.perform(post("/v1/users")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.id").value(1))
-                .andExpect(jsonPath("$.name").value("User"));
-    }
-
-    @Test
-    void create_whenEmailAlreadyExists_shouldReturnConflict() throws Exception {
-        UserAddressDTO exampleAddressDTO = new UserAddressDTO(null, "Rua Teste", "São Paulo", "100", null, "SP", "00000-000", "Brasil");
-        UserDTO request = new UserDTO(null, "User", "teste@email.com", "login", "password", 1L, exampleAddressDTO);
-
-        when(createUserUseCase.execute(any(UserDTO.class))).thenThrow(new EmailAlreadyExistsException("Email already exists"));
-
-        mockMvc.perform(post("/v1/users")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isConflict());
     }
 
     @Test

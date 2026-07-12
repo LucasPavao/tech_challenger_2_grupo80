@@ -1,7 +1,6 @@
 package br.com.tech.challenger.api_restaurante.infrastructure.presentation.controller;
 
 import br.com.tech.challenger.api_restaurante.application.dto.UserDTO;
-import br.com.tech.challenger.api_restaurante.application.usecase.user.CreateUserUseCase;
 import br.com.tech.challenger.api_restaurante.application.usecase.user.DeleteUserUseCase;
 import br.com.tech.challenger.api_restaurante.application.usecase.user.FindUserByEmailUseCase;
 import br.com.tech.challenger.api_restaurante.application.usecase.user.FindUserByIdUseCase;
@@ -16,12 +15,10 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -36,26 +33,12 @@ import java.util.List;
 @Tag(name = "Users", description = "User management endpoints")
 public class UserController {
 
-    private final CreateUserUseCase createUserUseCase;
     private final FindUserUseCase findUserUseCase;
     private final FindUserByIdUseCase findUserByIdUseCase;
     private final FindUserByEmailUseCase findUserByEmailUseCase;
     private final FindUserByLoginUseCase findUserByLoginUseCase;
     private final UpdateUserUseCase updateUserUseCase;
     private final DeleteUserUseCase deleteUserUseCase;
-
-    @Operation(summary = "Create a new user")
-    @ApiResponses({
-            @ApiResponse(responseCode = "201", description = "User created successfully",
-                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = UserDTO.class))),
-            @ApiResponse(responseCode = "400", description = "Invalid input data"),
-            @ApiResponse(responseCode = "409", description = "Email or login already exists")
-    })
-    @PostMapping
-    public ResponseEntity<UserDTO> create(@RequestBody UserDTO dto) {
-        UserDTO created = createUserUseCase.execute(dto);
-        return ResponseEntity.status(HttpStatus.CREATED).body(created);
-    }
 
     @Operation(summary = "Get all users")
     @ApiResponses({

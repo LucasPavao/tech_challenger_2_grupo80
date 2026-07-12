@@ -3,12 +3,15 @@ package br.com.tech.challenger.api_restaurante.infrastructure.presentation.contr
 import br.com.tech.challenger.api_restaurante.application.dto.AuthenticatedUserResponseDTO;
 import br.com.tech.challenger.api_restaurante.application.dto.LoginRequestDTO;
 import br.com.tech.challenger.api_restaurante.application.dto.RefreshTokenRequestDTO;
+import br.com.tech.challenger.api_restaurante.application.dto.RegisterRequestDTO;
 import br.com.tech.challenger.api_restaurante.application.dto.TokenResponseDTO;
 import br.com.tech.challenger.api_restaurante.application.dto.UserAddressDTO;
 import br.com.tech.challenger.api_restaurante.application.dto.UserDTO;
+import br.com.tech.challenger.api_restaurante.application.exception.EmailAlreadyExistsException;
 import br.com.tech.challenger.api_restaurante.application.exception.InvalidTokenException;
 import br.com.tech.challenger.api_restaurante.application.usecase.auth.LoginUseCase;
 import br.com.tech.challenger.api_restaurante.application.usecase.auth.RefreshTokenUseCase;
+import br.com.tech.challenger.api_restaurante.application.usecase.auth.RegisterUseCase;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -31,6 +34,7 @@ class AuthControllerTest {
 
     private LoginUseCase loginUseCase;
     private RefreshTokenUseCase refreshTokenUseCase;
+    private RegisterUseCase registerUseCase;
 
     private ObjectMapper objectMapper;
 
@@ -38,8 +42,9 @@ class AuthControllerTest {
     void setUp() {
         loginUseCase = Mockito.mock(LoginUseCase.class);
         refreshTokenUseCase = Mockito.mock(RefreshTokenUseCase.class);
+        registerUseCase = Mockito.mock(RegisterUseCase.class);
 
-        AuthController controller = new AuthController(loginUseCase, refreshTokenUseCase);
+        AuthController controller = new AuthController(loginUseCase, refreshTokenUseCase, registerUseCase);
         mockMvc = MockMvcBuilders.standaloneSetup(controller).build();
         objectMapper = new ObjectMapper();
     }
@@ -82,5 +87,37 @@ class AuthControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(new RefreshTokenRequestDTO("bad-token"))))
                 .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void register_shouldReturnCreatedWithTokens() throws Exception {
+        UserAddressDTO addressDTO = new UserAddressDTO(1L, "Rua Teste", "São Paulo", "100", null, "SP", "00000-000", "Brasil");
+        UserDTO userDTO = new UserDTO(1L, "John Smith", "john@email.com", "john.smith", null, 3L, addressDTO);
+        TokenResponseDTO tokenDTO = new TokenResponseDTO("access-token", "refresh-token", Instant.now().plusSeconds(3600));
+
+        when(registerUseCase.execute(any(RegisterRequestDTO.class))).thenReturn(new AuthenticatedUserResponseDTO(userDTO, tokenDTO));
+
+        RegisterRequestDTO request = new RegisterRequestDTO("John Smith", "john@email.com", "john.smith", "StrongPass@123", addressDTO);
+
+        mockMvc.perform(post("/v1/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.user.login").value("john.smith"))
+                .andExpect(jsonPath("$.token.accessToken").value("access-token"));
+    }
+
+    @Test
+    void register_whenEmailAlreadyExists_shouldReturnConflict() throws Exception {
+        UserAddressDTO addressDTO = new UserAddressDTO(1L, "Rua Teste", "São Paulo", "100", null, "SP", "00000-000", "Brasil");
+        RegisterRequestDTO request = new RegisterRequestDTO("John Smith", "john@email.com", "john.smith", "StrongPass@123", addressDTO);
+
+        when(registerUseCase.execute(any(RegisterRequestDTO.class)))
+                .thenThrow(new EmailAlreadyExistsException("Email already exists"));
+
+        mockMvc.perform(post("/v1/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isConflict());
     }
 }
