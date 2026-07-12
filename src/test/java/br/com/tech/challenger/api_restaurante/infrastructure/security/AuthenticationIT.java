@@ -115,4 +115,28 @@ class AuthenticationIT extends AbstractIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.accessToken").exists());
     }
+
+    @Test
+    void register_withNewUser_returnsTokensAndAllowsAccessToProtectedEndpoint() throws Exception {
+        String registerBody = "{"
+                + "\"name\":\"New Customer\","
+                + "\"email\":\"new-customer@example.com\","
+                + "\"login\":\"new-customer\","
+                + "\"password\":\"Str0ngPass!\","
+                + "\"userAddress\":{\"street\":\"Rua Teste\",\"city\":\"São Paulo\",\"number\":\"100\",\"state\":\"SP\",\"zipCode\":\"00000-000\",\"country\":\"Brasil\"}"
+                + "}";
+
+        String responseBody = mockMvc.perform(post("/v1/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(registerBody))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.user.login").value("new-customer"))
+                .andExpect(jsonPath("$.token.accessToken").exists())
+                .andReturn().getResponse().getContentAsString();
+
+        String accessToken = objectMapper.readTree(responseBody).get("token").get("accessToken").asText();
+
+        mockMvc.perform(get("/v1/users").header("Authorization", "Bearer " + accessToken))
+                .andExpect(status().isOk());
+    }
 }
