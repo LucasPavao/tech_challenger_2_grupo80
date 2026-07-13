@@ -15,11 +15,16 @@ import br.com.tech.challenger.api_restaurante.application.usecase.restaurant.Upd
 import br.com.tech.challenger.api_restaurante.domain.entity.Restaurant;
 import br.com.tech.challenger.api_restaurante.domain.entity.User;
 import br.com.tech.challenger.api_restaurante.domain.entity.UserType;
+import br.com.tech.challenger.api_restaurante.infrastructure.security.UserPrincipal;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.http.MediaType;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.method.annotation.AuthenticationPrincipalArgumentResolver;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
@@ -64,11 +69,16 @@ class RestaurantControllerTest {
                 updateRestaurantUseCase,
                 deleteRestaurantUseCase,
                 restaurantDtoMapper);
-        mockMvc = MockMvcBuilders.standaloneSetup(controller).build();
+        mockMvc = MockMvcBuilders.standaloneSetup(controller)
+                .setCustomArgumentResolvers(new AuthenticationPrincipalArgumentResolver())
+                .build();
         objectMapper = new ObjectMapper();
 
         UserType ownerType = UserType.builder().id(1L).name("RESTAURANT_OWNER").build();
         User owner = User.builder().id(1L).name("Owner").email("owner@email.com").login("owner").userType(ownerType).build();
+
+        SecurityContextHolder.getContext().setAuthentication(
+                new UsernamePasswordAuthenticationToken(new UserPrincipal(owner), null, List.of()));
 
         exampleRestaurant = Restaurant.builder()
                 .id(1L)
@@ -79,12 +89,17 @@ class RestaurantControllerTest {
                 .owner(owner)
                 .build();
 
-        exampleRequest = new RestaurantRequestDTO("Restaurant", "Address", "Brazilian", "10:00-22:00", 1L);
+        exampleRequest = new RestaurantRequestDTO("Restaurant", "Address", "Brazilian", "10:00-22:00");
+    }
+
+    @AfterEach
+    void tearDown() {
+        SecurityContextHolder.clearContext();
     }
 
     @Test
     void create_shouldReturnCreated() throws Exception {
-        when(createRestaurantUseCase.execute(any(RestaurantRequestDTO.class))).thenReturn(exampleRestaurant);
+        when(createRestaurantUseCase.execute(any(RestaurantRequestDTO.class), any(Long.class))).thenReturn(exampleRestaurant);
 
         mockMvc.perform(post("/v1/restaurants")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -96,7 +111,7 @@ class RestaurantControllerTest {
 
     @Test
     void create_whenOwnerNotFound_shouldReturnBadRequest() throws Exception {
-        when(createRestaurantUseCase.execute(any(RestaurantRequestDTO.class)))
+        when(createRestaurantUseCase.execute(any(RestaurantRequestDTO.class), any(Long.class)))
                 .thenThrow(new UserNotFoundException("User not found"));
 
         mockMvc.perform(post("/v1/restaurants")
@@ -107,7 +122,7 @@ class RestaurantControllerTest {
 
     @Test
     void create_whenUserNotAnOwner_shouldReturnBadRequest() throws Exception {
-        when(createRestaurantUseCase.execute(any(RestaurantRequestDTO.class)))
+        when(createRestaurantUseCase.execute(any(RestaurantRequestDTO.class), any(Long.class)))
                 .thenThrow(new UserNotAnOwnerException("User user is not a restaurant owner."));
 
         mockMvc.perform(post("/v1/restaurants")

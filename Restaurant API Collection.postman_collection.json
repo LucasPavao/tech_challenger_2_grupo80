@@ -509,7 +509,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"name\": \"Nestor Pizzaria\",\n  \"address\": \"R. Pinheiro Guimarães, 32 - Parque da Vila Prudente, São Paulo - SP\",\n  \"cuisineType\": \"Pizzaria\",\n  \"operatingHours\": \"8:00PM - 11:00PM\",\n  \"ownerId\": 3\n}",
+							"raw": "{\n  \"name\": \"Nestor Pizzaria\",\n  \"address\": \"R. Pinheiro Guimarães, 32 - Parque da Vila Prudente, São Paulo - SP\",\n  \"cuisineType\": \"Pizzaria\",\n  \"operatingHours\": \"8:00PM - 11:00PM\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -536,7 +536,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"name\": \"Nestor Pizzaria\",\n  \"address\": \"R. Pinheiro Guimarães, 32 - Parque da Vila Prudente, São Paulo - SP\",\n  \"cuisineType\": \"Pizzaria\",\n  \"operatingHours\": \"8:00PM - 11:00PM\",\n  \"ownerId\": 1\n}",
+							"raw": "{\n  \"name\": \"Nestor Pizzaria\",\n  \"address\": \"R. Pinheiro Guimarães, 32 - Parque da Vila Prudente, São Paulo - SP\",\n  \"cuisineType\": \"Pizzaria\",\n  \"operatingHours\": \"8:00PM - 11:00PM\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"

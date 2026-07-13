@@ -45,14 +45,14 @@ class CreateRestaurantUseCaseTest {
         UserType ownerType = UserType.builder().id(1L).name(UserTypeEnum.RESTAURANT_OWNER.name()).build();
         ownerUser = User.builder().id(1L).name("Owner").login("owner").userType(ownerType).build();
 
-        exampleRequest = new RestaurantRequestDTO("Restaurant", "Address", "Brazilian", "10:00-22:00", 1L);
+        exampleRequest = new RestaurantRequestDTO("Restaurant", "Address", "Brazilian", "10:00-22:00");
     }
 
     @Test
     void execute_whenOwnerNotFound_thenThrow() {
         when(userRepository.findById(1L)).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> useCase.execute(exampleRequest))
+        assertThatThrownBy(() -> useCase.execute(exampleRequest, 1L))
                 .isInstanceOf(UserNotFoundException.class)
                 .hasMessageContaining("User not found");
 
@@ -66,7 +66,7 @@ class CreateRestaurantUseCaseTest {
 
         when(userRepository.findById(1L)).thenReturn(Optional.of(customer));
 
-        assertThatThrownBy(() -> useCase.execute(exampleRequest))
+        assertThatThrownBy(() -> useCase.execute(exampleRequest, 1L))
                 .isInstanceOf(UserNotAnOwnerException.class)
                 .hasMessageContaining("is not a restaurant owner");
 
@@ -78,7 +78,7 @@ class CreateRestaurantUseCaseTest {
         when(userRepository.findById(1L)).thenReturn(Optional.of(ownerUser));
         when(restaurantRepository.save(any(Restaurant.class))).thenAnswer(inv -> inv.getArgument(0));
 
-        Restaurant result = useCase.execute(exampleRequest);
+        Restaurant result = useCase.execute(exampleRequest, 1L);
 
         assertThat(result.getName()).isEqualTo("Restaurant");
         assertThat(result.getOwner().getId()).isEqualTo(1L);
