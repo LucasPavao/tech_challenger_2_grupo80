@@ -6,7 +6,7 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
-@Schema(description = "Public self-registration data. The created account is always CUSTOMER type.")
+@Schema(description = "Public self-registration data. Account type defaults to CUSTOMER when omitted.")
 public record RegisterRequestDTO(
 
         @Schema(description = "User full name", example = "John Smith", requiredMode = Schema.RequiredMode.REQUIRED)
@@ -29,6 +29,10 @@ public record RegisterRequestDTO(
         @Schema(description = "User address data", requiredMode = Schema.RequiredMode.REQUIRED)
         @NotNull(message = "User must be registered with an address")
         @Valid
-        UserAddressDTO userAddress
+        UserAddressDTO userAddress,
+
+        @Schema(description = "Account type. Defaults to CUSTOMER when omitted. Only CUSTOMER and RESTAURANT_OWNER may be self-assigned.",
+                example = "CUSTOMER", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+        String userType
 ) {
 }

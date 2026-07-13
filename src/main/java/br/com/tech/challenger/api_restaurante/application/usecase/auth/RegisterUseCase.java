@@ -4,6 +4,7 @@ import br.com.tech.challenger.api_restaurante.application.dto.AuthenticatedUserR
 import br.com.tech.challenger.api_restaurante.application.dto.RegisterRequestDTO;
 import br.com.tech.challenger.api_restaurante.application.dto.TokenResponseDTO;
 import br.com.tech.challenger.api_restaurante.application.exception.EmailAlreadyExistsException;
+import br.com.tech.challenger.api_restaurante.application.exception.InvalidUserTypeException;
 import br.com.tech.challenger.api_restaurante.application.exception.LoginAlreadyExistsException;
 import br.com.tech.challenger.api_restaurante.application.exception.UserTypeNotFoundException;
 import br.com.tech.challenger.api_restaurante.application.mapper.UserAddressDtoMapper;
@@ -40,8 +41,16 @@ public class RegisterUseCase {
             throw new LoginAlreadyExistsException("Login already exists");
         }
 
-        UserType customerType = userTypeRepository.findByName(UserTypeEnum.CUSTOMER.name())
-                .orElseThrow(() -> new UserTypeNotFoundException("Default user type not found"));
+        String requestedType = dto.userType() == null || dto.userType().isBlank()
+                ? UserTypeEnum.CUSTOMER.name()
+                : dto.userType().trim().toUpperCase();
+
+        if (!requestedType.equals(UserTypeEnum.CUSTOMER.name()) && !requestedType.equals(UserTypeEnum.RESTAURANT_OWNER.name())) {
+            throw new InvalidUserTypeException("userType must be CUSTOMER or RESTAURANT_OWNER");
+        }
+
+        UserType userType = userTypeRepository.findByName(requestedType)
+                .orElseThrow(() -> new UserTypeNotFoundException("User type not found"));
 
         UserAddress userAddress = userAddressDtoMapper.buildUserAddressFromDTO(dto.userAddress());
 
@@ -50,7 +59,7 @@ public class RegisterUseCase {
                 .email(dto.email())
                 .login(dto.login())
                 .password(passwordEncoder.encode(dto.password()))
-                .userType(customerType)
+                .userType(userType)
                 .userAddress(userAddress)
                 .build();
 

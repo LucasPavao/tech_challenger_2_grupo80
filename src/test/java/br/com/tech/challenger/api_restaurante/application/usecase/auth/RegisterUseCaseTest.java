@@ -4,6 +4,7 @@ import br.com.tech.challenger.api_restaurante.application.dto.AuthenticatedUserR
 import br.com.tech.challenger.api_restaurante.application.dto.RegisterRequestDTO;
 import br.com.tech.challenger.api_restaurante.application.dto.UserAddressDTO;
 import br.com.tech.challenger.api_restaurante.application.exception.EmailAlreadyExistsException;
+import br.com.tech.challenger.api_restaurante.application.exception.InvalidUserTypeException;
 import br.com.tech.challenger.api_restaurante.application.exception.LoginAlreadyExistsException;
 import br.com.tech.challenger.api_restaurante.application.exception.UserTypeNotFoundException;
 import br.com.tech.challenger.api_restaurante.application.mapper.UserAddressDtoMapper;
@@ -94,7 +95,7 @@ class RegisterUseCaseTest {
                 .build();
 
         exampleAddressDTO = new UserAddressDTO(null, "Rua Teste", "São Paulo", "100", null, "SP", "00000-000", "Brasil");
-        exampleDto = new RegisterRequestDTO("User", "teste@email.com", "login", "password", exampleAddressDTO);
+        exampleDto = new RegisterRequestDTO("User", "teste@email.com", "login", "password", exampleAddressDTO, null);
     }
 
     @Test
@@ -128,6 +129,36 @@ class RegisterUseCaseTest {
 
         assertThatThrownBy(() -> useCase.execute(exampleDto))
                 .isInstanceOf(UserTypeNotFoundException.class);
+
+        verify(userRepository, never()).save(any());
+    }
+
+    @Test
+    void execute_whenUserTypeIsRestaurantOwner_thenAssignsIt() {
+        UserType ownerType = UserType.builder().id(2L).name("RESTAURANT_OWNER").build();
+        RegisterRequestDTO ownerDto = new RegisterRequestDTO("User", "teste@email.com", "login", "password", exampleAddressDTO, "RESTAURANT_OWNER");
+
+        when(userRepository.existsByEmail("teste@email.com")).thenReturn(false);
+        when(userRepository.existsByLogin("login")).thenReturn(false);
+        when(userTypeRepository.findByName("RESTAURANT_OWNER")).thenReturn(Optional.of(ownerType));
+        when(passwordEncoder.encode("password")).thenReturn("hashed-password");
+        when(userRepository.save(any(User.class))).thenReturn(savedUser);
+        when(jwtTokenService.generateTokenPair(savedUser))
+                .thenReturn(new TokenPair("access-token", "refresh-token", Instant.now().plusSeconds(3600)));
+
+        useCase.execute(ownerDto);
+
+        ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
+        verify(userRepository).save(userCaptor.capture());
+        assertThat(userCaptor.getValue().getUserType()).isEqualTo(ownerType);
+    }
+
+    @Test
+    void execute_whenUserTypeIsAdmin_thenThrowInvalidUserType() {
+        RegisterRequestDTO adminDto = new RegisterRequestDTO("User", "teste@email.com", "login", "password", exampleAddressDTO, "ADMIN");
+
+        assertThatThrownBy(() -> useCase.execute(adminDto))
+                .isInstanceOf(InvalidUserTypeException.class);
 
         verify(userRepository, never()).save(any());
     }

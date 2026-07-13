@@ -97,7 +97,7 @@ class AuthControllerTest {
 
         when(registerUseCase.execute(any(RegisterRequestDTO.class))).thenReturn(new AuthenticatedUserResponseDTO(userDTO, tokenDTO));
 
-        RegisterRequestDTO request = new RegisterRequestDTO("John Smith", "john@email.com", "john.smith", "StrongPass@123", addressDTO);
+        RegisterRequestDTO request = new RegisterRequestDTO("John Smith", "john@email.com", "john.smith", "StrongPass@123", addressDTO, null);
 
         mockMvc.perform(post("/v1/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -110,7 +110,7 @@ class AuthControllerTest {
     @Test
     void register_whenEmailAlreadyExists_shouldReturnConflict() throws Exception {
         UserAddressDTO addressDTO = new UserAddressDTO(1L, "Rua Teste", "São Paulo", "100", null, "SP", "00000-000", "Brasil");
-        RegisterRequestDTO request = new RegisterRequestDTO("John Smith", "john@email.com", "john.smith", "StrongPass@123", addressDTO);
+        RegisterRequestDTO request = new RegisterRequestDTO("John Smith", "john@email.com", "john.smith", "StrongPass@123", addressDTO, null);
 
         when(registerUseCase.execute(any(RegisterRequestDTO.class)))
                 .thenThrow(new EmailAlreadyExistsException("Email already exists"));

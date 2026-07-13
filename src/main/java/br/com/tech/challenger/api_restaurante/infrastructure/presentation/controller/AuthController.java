@@ -41,7 +41,7 @@ public class AuthController {
         return ResponseEntity.ok(refreshTokenUseCase.execute(dto));
     }
 
-    @Operation(summary = "Register a new customer account")
+    @Operation(summary = "Register a new account (CUSTOMER by default, or RESTAURANT_OWNER if requested)")
     @PostMapping("/register")
     public ResponseEntity<AuthenticatedUserResponseDTO> register(@RequestBody @Valid RegisterRequestDTO dto) {
         return ResponseEntity.status(HttpStatus.CREATED).body(registerUseCase.execute(dto));
