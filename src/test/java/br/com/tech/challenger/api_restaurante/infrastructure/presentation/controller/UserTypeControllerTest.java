@@ -1,7 +1,11 @@
 package br.com.tech.challenger.api_restaurante.infrastructure.presentation.controller;
 
 import br.com.tech.challenger.api_restaurante.application.dto.UserTypeDTO;
-import br.com.tech.challenger.api_restaurante.application.usecase.usertype.UserTypeUseCase;
+import br.com.tech.challenger.api_restaurante.application.usecase.usertype.CreateUserTypeUseCase;
+import br.com.tech.challenger.api_restaurante.application.usecase.usertype.DeleteUserTypeUseCase;
+import br.com.tech.challenger.api_restaurante.application.usecase.usertype.FindUserTypeByIdUseCase;
+import br.com.tech.challenger.api_restaurante.application.usecase.usertype.FindUserTypeUseCase;
+import br.com.tech.challenger.api_restaurante.application.usecase.usertype.UpdateUserTypeUseCase;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -21,20 +25,36 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class UserTypeControllerTest {
 
     private MockMvc mockMvc;
-    private UserTypeUseCase useCase;
+
+    private CreateUserTypeUseCase createUserTypeUseCase;
+    private FindUserTypeUseCase findUserTypeUseCase;
+    private FindUserTypeByIdUseCase findUserTypeByIdUseCase;
+    private UpdateUserTypeUseCase updateUserTypeUseCase;
+    private DeleteUserTypeUseCase deleteUserTypeUseCase;
+
     private ObjectMapper objectMapper;
 
     @BeforeEach
     void setUp() {
-        useCase = Mockito.mock(UserTypeUseCase.class);
-        UserTypeController controller = new UserTypeController(useCase);
+        createUserTypeUseCase = Mockito.mock(CreateUserTypeUseCase.class);
+        findUserTypeUseCase = Mockito.mock(FindUserTypeUseCase.class);
+        findUserTypeByIdUseCase = Mockito.mock(FindUserTypeByIdUseCase.class);
+        updateUserTypeUseCase = Mockito.mock(UpdateUserTypeUseCase.class);
+        deleteUserTypeUseCase = Mockito.mock(DeleteUserTypeUseCase.class);
+
+        UserTypeController controller = new UserTypeController(
+                createUserTypeUseCase,
+                findUserTypeUseCase,
+                findUserTypeByIdUseCase,
+                updateUserTypeUseCase,
+                deleteUserTypeUseCase);
         mockMvc = MockMvcBuilders.standaloneSetup(controller).build();
         objectMapper = new ObjectMapper();
     }
 
     @Test
     void getAll_shouldReturnList() throws Exception {
-        when(useCase.findAll()).thenReturn(List.of(new UserTypeDTO(1L, "Admin")));
+        when(findUserTypeUseCase.execute()).thenReturn(List.of(new UserTypeDTO(1L, "Admin")));
 
         mockMvc.perform(get("/v1/user-types"))
                 .andExpect(status().isOk())
@@ -48,7 +68,7 @@ class UserTypeControllerTest {
         UserTypeDTO request = new UserTypeDTO(null, "Admin");
         UserTypeDTO response = new UserTypeDTO(1L, "Admin");
 
-        when(useCase.create(any(UserTypeDTO.class))).thenReturn(response);
+        when(createUserTypeUseCase.execute(any(UserTypeDTO.class))).thenReturn(response);
 
         mockMvc.perform(post("/v1/user-types")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -60,7 +80,7 @@ class UserTypeControllerTest {
 
     @Test
     void findById_shouldReturnDto() throws Exception {
-        when(useCase.findById(1L)).thenReturn(new UserTypeDTO(1L, "Admin"));
+        when(findUserTypeByIdUseCase.execute(1L)).thenReturn(new UserTypeDTO(1L, "Admin"));
 
         mockMvc.perform(get("/v1/user-types/1"))
                 .andExpect(status().isOk())
@@ -73,7 +93,7 @@ class UserTypeControllerTest {
         UserTypeDTO request = new UserTypeDTO(null, "Customer");
         UserTypeDTO response = new UserTypeDTO(1L, "Customer");
 
-        when(useCase.update(any(Long.class), any(UserTypeDTO.class))).thenReturn(response);
+        when(updateUserTypeUseCase.execute(any(Long.class), any(UserTypeDTO.class))).thenReturn(response);
 
         mockMvc.perform(put("/v1/user-types/1")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -85,10 +105,9 @@ class UserTypeControllerTest {
 
     @Test
     void delete_shouldReturnNoContent() throws Exception {
-        doNothing().when(useCase).delete(1L);
+        doNothing().when(deleteUserTypeUseCase).execute(1L);
 
         mockMvc.perform(delete("/v1/user-types/1"))
                 .andExpect(status().isNoContent());
     }
 }
-

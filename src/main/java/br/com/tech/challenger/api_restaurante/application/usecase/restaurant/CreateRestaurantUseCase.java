@@ -17,8 +17,8 @@ public class CreateRestaurantUseCase {
     private final RestaurantRepository restaurantRepository;
     private final UserRepository userRepository;
 
-    public Restaurant execute(RestaurantRequestDTO restaurantDTO) {
-        User owner = userRepository.findById(restaurantDTO.ownerId())
+    public Restaurant execute(RestaurantRequestDTO restaurantDTO, Long ownerId) {
+        User owner = userRepository.findById(ownerId)
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
 
         if (!owner.canOwnRestaurant()) {

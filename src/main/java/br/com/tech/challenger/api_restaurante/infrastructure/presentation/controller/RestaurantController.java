@@ -4,6 +4,7 @@ import br.com.tech.challenger.api_restaurante.application.dto.RestaurantDTO;
 import br.com.tech.challenger.api_restaurante.application.dto.RestaurantRequestDTO;
 import br.com.tech.challenger.api_restaurante.application.mapper.RestaurantDtoMapper;
 import br.com.tech.challenger.api_restaurante.application.usecase.restaurant.*;
+import br.com.tech.challenger.api_restaurante.infrastructure.security.UserPrincipal;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -15,6 +16,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -33,15 +35,18 @@ public class RestaurantController {
 
     private final RestaurantDtoMapper restaurantDtoMapper;
 
-    @Operation(summary = "Create a new restaurant")
+    @Operation(summary = "Create a new restaurant owned by the authenticated user")
     @ApiResponses({
             @ApiResponse(responseCode = "201", description = "Restaurant created successfully",
                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = RestaurantDTO.class))),
             @ApiResponse(responseCode = "400", description = "Invalid input data"),
     })
     @PostMapping
-    public ResponseEntity<RestaurantDTO> create(@RequestBody @Valid RestaurantRequestDTO dto) {
-        RestaurantDTO restaurantDto = restaurantDtoMapper.toDto(createRestaurantUseCase.execute(dto));
+    public ResponseEntity<RestaurantDTO> create(
+            @RequestBody @Valid RestaurantRequestDTO dto,
+            @AuthenticationPrincipal UserPrincipal principal) {
+        RestaurantDTO restaurantDto = restaurantDtoMapper.toDto(
+                createRestaurantUseCase.execute(dto, principal.getUser().getId()));
         return ResponseEntity.status(HttpStatus.CREATED).body(restaurantDto);
     }
 

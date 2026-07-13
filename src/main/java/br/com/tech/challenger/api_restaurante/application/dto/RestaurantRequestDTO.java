@@ -2,7 +2,6 @@ package br.com.tech.challenger.api_restaurante.application.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 
 public record RestaurantRequestDTO (
 
@@ -20,10 +19,6 @@ public record RestaurantRequestDTO (
 
         @Schema(description = "Operating hours", example = "10:00AM - 10:00PM", requiredMode = Schema.RequiredMode.REQUIRED)
         @NotBlank(message = "Operating hours is required")
-        String operatingHours,
-
-        @Schema(description = "Restaurant's owner ID", requiredMode = Schema.RequiredMode.REQUIRED)
-        @NotNull(message = "Restaurant must be registered with an owner")
-        Long ownerId
+        String operatingHours
 ) {
 }
