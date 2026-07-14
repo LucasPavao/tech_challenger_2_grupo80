@@ -1,0 +1,745 @@
+{
+	"info": {
+		"_postman_id": "fc2b9c05-ce5b-414d-8736-b3f11e7b12d4",
+		"name": "Restaurant API Collection",
+		"description": "Collection for testing the Restaurant API (Users, User Types, Restaurants, Menu Items, Authentication). New users are created via Auth > Register (public, always CUSTOMER type) — there is no authenticated user-creation endpoint.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{accessToken}}",
+				"type": "string"
+			}
+		]
+	},
+	"item": [
+		{
+			"name": "Auth",
+			"item": [
+				{
+					"name": "Login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const body = pm.response.json();",
+									"if (body.token && body.token.accessToken) {",
+									"    pm.collectionVariables.set('accessToken', body.token.accessToken);",
+									"    pm.collectionVariables.set('refreshToken', body.token.refreshToken);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"login\": \"john.smith\",\n  \"password\": \"StrongPass@123\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/v1/auth/login",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"v1",
+								"auth",
+								"login"
+							]
+						},
+						"description": "Authenticate with login/password and receive an access/refresh token pair plus the authenticated user's data. Automatically stores accessToken/refreshToken as collection variables for use by other requests."
+					},
+					"response": []
+				},
+				{
+					"name": "Register",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const body = pm.response.json();",
+									"if (body.token && body.token.accessToken) {",
+									"    pm.collectionVariables.set('accessToken', body.token.accessToken);",
+									"    pm.collectionVariables.set('refreshToken', body.token.refreshToken);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Nestor\",\n  \"email\": \"nestor@nestor.com\",\n  \"login\": \"nestor\",\n  \"password\": \"senha123\",\n  \"userAddress\": {\n    \"street\": \"R. Pinheiro Guimarães\",\n    \"city\": \"São Paulo\",\n    \"number\": \"32\",\n    \"complement\": \"\",\n    \"state\": \"SP\",\n    \"zipCode\": \"03137-010\",\n    \"country\": \"Brasil\"\n  }\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/v1/auth/register",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"v1",
+								"auth",
+								"register"
+							]
+						},
+						"description": "Publicly register a new CUSTOMER account. The account type cannot be chosen by the caller. Automatically stores accessToken/refreshToken as collection variables, same as Login."
+					},
+					"response": []
+				},
+				{
+					"name": "Refresh Token",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const body = pm.response.json();",
+									"if (body.accessToken) {",
+									"    pm.collectionVariables.set('accessToken', body.accessToken);",
+									"    pm.collectionVariables.set('refreshToken', body.refreshToken);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/v1/auth/refresh-token",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"v1",
+								"auth",
+								"refresh-token"
+							]
+						},
+						"description": "Issue a new access/refresh token pair from a valid refresh token. Automatically updates the stored collection variables."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Users",
+			"item": [
+				{
+					"name": "Get All Users",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/v1/users",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"v1",
+								"users"
+							]
+						},
+						"description": "Retrieve all users"
+					},
+					"response": []
+				},
+				{
+					"name": "Get User by ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/v1/users/1",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"v1",
+								"users",
+								"1"
+							]
+						},
+						"description": "Get a specific user by ID"
+					},
+					"response": []
+				},
+				{
+					"name": "Search Users by Name",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/v1/users/search/by-name?name=João",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"v1",
+								"users",
+								"search",
+								"by-name"
+							],
+							"query": [
+								{
+									"key": "name",
+									"value": "João"
+								}
+							]
+						},
+						"description": "Search users by name (contains)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get User by Email",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/v1/users/search/by-email?email=joao@example.com",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"v1",
+								"users",
+								"search",
+								"by-email"
+							],
+							"query": [
+								{
+									"key": "email",
+									"value": "joao@example.com"
+								}
+							]
+						},
+						"description": "Get user by email address"
+					},
+					"response": []
+				},
+				{
+					"name": "Get User by Login",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/v1/users/search/by-login?login=joao.silva",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"v1",
+								"users",
+								"search",
+								"by-login"
+							],
+							"query": [
+								{
+									"key": "login",
+									"value": "joao.silva"
+								}
+							]
+						},
+						"description": "Get user by login"
+					},
+					"response": []
+				},
+				{
+					"name": "Update User",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"João Silva Updated\",\n  \"email\": \"joao.updated@example.com\",\n  \"login\": \"joao.silva\",\n  \"password\": \"novaSenha123\",\n  \"userTypeId\": 1,\n  \"userAddress\": {\n    \"street\": \"Rua Atualizada\",\n    \"city\": \"São Paulo\",\n    \"number\": \"456\",\n    \"complement\": \"Apto 50\",\n    \"state\": \"SP\",\n    \"zipCode\": \"01310-100\",\n    \"country\": \"Brasil\"\n  }\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/v1/users/1",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"v1",
+								"users",
+								"1"
+							]
+						},
+						"description": "Update an existing user"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete User",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/v1/users/1",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"v1",
+								"users",
+								"1"
+							]
+						},
+						"description": "Delete a user"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "User Types",
+			"item": [
+				{
+					"name": "Create User Type",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Admin\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/v1/user-types",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"v1",
+								"user-types"
+							]
+						},
+						"description": "Create a new user type"
+					},
+					"response": []
+				},
+				{
+					"name": "Get All User Types",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/v1/user-types",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"v1",
+								"user-types"
+							]
+						},
+						"description": "Retrieve all user types"
+					},
+					"response": []
+				},
+				{
+					"name": "Get User Type by ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/v1/user-types/1",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"v1",
+								"user-types",
+								"1"
+							]
+						},
+						"description": "Get a specific user type by ID"
+					},
+					"response": []
+				},
+				{
+					"name": "Update User Type",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Customer\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/v1/user-types/1",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"v1",
+								"user-types",
+								"1"
+							]
+						},
+						"description": "Update an existing user type"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete User Type",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/v1/user-types/1",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"v1",
+								"user-types",
+								"1"
+							]
+						},
+						"description": "Delete a user type"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Restaurants",
+			"item": [
+				{
+					"name": "Get all restaurants",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/v1/restaurants",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"v1",
+								"restaurants"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get restaurant by ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/v1/restaurants/1",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"v1",
+								"restaurants",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create restaurant",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Nestor Pizzaria\",\n  \"address\": \"R. Pinheiro Guimarães, 32 - Parque da Vila Prudente, São Paulo - SP\",\n  \"cuisineType\": \"Pizzaria\",\n  \"operatingHours\": \"8:00PM - 11:00PM\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/v1/restaurants",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"v1",
+								"restaurants"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update restaurant",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Nestor Pizzaria\",\n  \"address\": \"R. Pinheiro Guimarães, 32 - Parque da Vila Prudente, São Paulo - SP\",\n  \"cuisineType\": \"Pizzaria\",\n  \"operatingHours\": \"8:00PM - 11:00PM\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/v1/restaurants/3",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"v1",
+								"restaurants",
+								"3"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete restaurant",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/v1/restaurants/1",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"v1",
+								"restaurants",
+								"1"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Menu Items",
+			"item": [
+				{
+					"name": "Get all menu items",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/v1/menu-items",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"v1",
+								"menu-items"
+							]
+						},
+						"description": "Retrieve all menu items"
+					},
+					"response": []
+				},
+				{
+					"name": "Get menu items by restaurant",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/v1/menu-items?restaurantId=1",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"v1",
+								"menu-items"
+							],
+							"query": [
+								{
+									"key": "restaurantId",
+									"value": "1"
+								}
+							]
+						},
+						"description": "Retrieve menu items filtered by restaurant"
+					},
+					"response": []
+				},
+				{
+					"name": "Get menu item by ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/v1/menu-items/1",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"v1",
+								"menu-items",
+								"1"
+							]
+						},
+						"description": "Get a specific menu item by ID"
+					},
+					"response": []
+				},
+				{
+					"name": "Create menu item",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Cheeseburger\",\n  \"description\": \"Beef patty with cheddar and special sauce\",\n  \"price\": 29.90,\n  \"availableOnlyAtLocation\": false,\n  \"imagePath\": \"/images/cheeseburger.png\",\n  \"restaurantId\": 1\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/v1/menu-items",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"v1",
+								"menu-items"
+							]
+						},
+						"description": "Create a new menu item"
+					},
+					"response": []
+				},
+				{
+					"name": "Update menu item",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Cheeseburger Deluxe\",\n  \"description\": \"Beef patty with cheddar, bacon and special sauce\",\n  \"price\": 34.90,\n  \"availableOnlyAtLocation\": false,\n  \"imagePath\": \"/images/cheeseburger-deluxe.png\",\n  \"restaurantId\": 1\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/v1/menu-items/1",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"v1",
+								"menu-items",
+								"1"
+							]
+						},
+						"description": "Update an existing menu item"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete menu item",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/v1/menu-items/1",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"v1",
+								"menu-items",
+								"1"
+							]
+						},
+						"description": "Delete a menu item"
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:8080",
+			"type": "string"
+		},
+		{
+			"key": "accessToken",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "refreshToken",
+			"value": "",
+			"type": "string"
+		}
+	]
+}

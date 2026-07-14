@@ -1,0 +1,70 @@
+package br.com.tech.challenger.api_restaurante.application.usecase.user;
+
+import br.com.tech.challenger.api_restaurante.application.dto.UserDTO;
+import br.com.tech.challenger.api_restaurante.application.exception.UserNotFoundException;
+import br.com.tech.challenger.api_restaurante.application.mapper.UserAddressDtoMapper;
+import br.com.tech.challenger.api_restaurante.application.mapper.UserDtoMapper;
+import br.com.tech.challenger.api_restaurante.domain.entity.User;
+import br.com.tech.challenger.api_restaurante.domain.entity.UserAddress;
+import br.com.tech.challenger.api_restaurante.domain.entity.UserType;
+import br.com.tech.challenger.api_restaurante.domain.repository.UserRepository;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+import java.util.Optional;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.when;
+
+@ExtendWith(MockitoExtension.class)
+class FindUserByEmailUseCaseTest {
+
+    @Mock
+    private UserRepository repository;
+
+    private FindUserByEmailUseCase useCase;
+
+    private User exampleUser;
+
+    @BeforeEach
+    void setUp() {
+        useCase = new FindUserByEmailUseCase(repository, new UserDtoMapper(new UserAddressDtoMapper()));
+
+        UserType userType = UserType.builder().id(1L).name("ADMIN").build();
+        UserAddress address = UserAddress.builder()
+                .id(1L).street("Rua Teste").number("100").city("São Paulo").state("SP")
+                .zipCode("00000-000").country("Brasil").build();
+
+        exampleUser = User.builder()
+                .id(1L)
+                .name("User")
+                .email("teste@email.com")
+                .login("login")
+                .password("password")
+                .userType(userType)
+                .userAddress(address)
+                .build();
+    }
+
+    @Test
+    void execute_success() {
+        when(repository.findByEmail("teste@email.com")).thenReturn(Optional.of(exampleUser));
+
+        UserDTO result = useCase.execute("teste@email.com");
+
+        assertThat(result.email()).isEqualTo("teste@email.com");
+    }
+
+    @Test
+    void execute_notFound_thenThrow() {
+        when(repository.findByEmail("naoexiste@email.com")).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> useCase.execute("naoexiste@email.com"))
+                .isInstanceOf(UserNotFoundException.class)
+                .hasMessageContaining("User not found");
+    }
+}
